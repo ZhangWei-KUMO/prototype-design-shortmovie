@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>新建剧本 - 短剧创作后台</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/heroicons/2.0.18/24/outline/heroicons.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+            background-color: #f3f4f6; /* Tailwind gray-100 */
+        }
+        /* 消息提示框样式 (与列表页一致) */
+        .message-box {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 1rem 1.5rem;
+            border-radius: 0.375rem; /* rounded-md */
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06); /* shadow-lg */
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+            pointer-events: none;
+        }
+        .message-box.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+            pointer-events: auto;
+        }
+        .message-box.success {
+            background-color: #d1fae5; /* Tailwind green-100 */
+            color: #065f46; /* Tailwind green-800 */
+            border: 1px solid #6ee7b7; /* Tailwind green-300 */
+        }
+        .message-box.error {
+            background-color: #fee2e2; /* Tailwind red-100 */
+            color: #991b1b; /* Tailwind red-800 */
+            border: 1px solid #fca5a5; /* Tailwind red-300 */
+        }
+        .message-box.info {
+            background-color: #e0e7ff; /* Tailwind indigo-100 */
+            color: #3730a3; /* Tailwind indigo-800 */
+            border: 1px solid #a5b4fc; /* Tailwind indigo-300 */
+        }
+        /* 自定义textarea高度 */
+        textarea {
+            min-height: 120px; /* 默认最小高度 */
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <header class="bg-white shadow-sm">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                     <a href="short_drama_backend_ui.html" id="back-to-list-btn-header" class="flex items-center text-indigo-600 hover:text-indigo-800 transition duration-150 ease-in-out">
+                        <svg class="h-5 w-5 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                            <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+                        </svg>
+                        返回剧本列表
+                    </a>
+                </div>
+                <h1 class="text-xl font-semibold text-gray-900">新建剧本</h1>
+                <div class="w-28"></div> </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="max-w-2xl mx-auto bg-white p-6 sm:p-8 rounded-lg shadow-md">
+            <form id="create-script-form">
+                <div class="mb-6">
+                    <label for="script-name" class="block text-sm font-medium text-gray-700 mb-1">剧本名称 <span class="text-red-500">*</span></label>
+                    <input type="text" name="script-name" id="script-name" required
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 ease-in-out"
+                           placeholder="例如：都市狂龙之王者归来">
+                </div>
+
+                <div class="mb-6">
+                    <label for="script-description" class="block text-sm font-medium text-gray-700 mb-1">剧本描述</label>
+                    <textarea name="script-description" id="script-description" rows="3"
+                              class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 ease-in-out"
+                              placeholder="简要描述剧本的核心内容、亮点等"></textarea>
+                </div>
+
+                <div class="mb-6">
+                    <label for="script-outline" class="block text-sm font-medium text-gray-700 mb-1">大纲内容 <span class="text-red-500">*</span></label>
+                    <textarea name="script-outline" id="script-outline" rows="6" required
+                              class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 ease-in-out"
+                              placeholder="详细的剧本大纲，分点或分段描述主要情节、角色发展等"></textarea>
+                </div>
+
+                <div class="mb-6">
+                    <label for="ai-prompt" class="block text-sm font-medium text-gray-700 mb-1">AI提示词 (Prompt)</label>
+                    <textarea name="ai-prompt" id="ai-prompt" rows="4"
+                              class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 ease-in-out"
+                              placeholder="用于AI辅助创作的提示词，例如：生成一段紧张刺激的追逐戏，主角是xxx，场景在xxx"></textarea>
+                    <p class="mt-1 text-xs text-gray-500">这些提示词可以帮助AI更好地理解您的创作意图。</p>
+                </div>
+
+                <div class="mt-8 pt-6 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-end gap-3">
+                    <a href="short_drama_backend_ui.html" id="cancel-btn"
+                       class="w-full sm:w-auto px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out text-center">
+                        取消
+                    </a>
+                    <button type="submit" id="submit-btn"
+                            class="w-full sm:w-auto flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out">
+                        <svg class="h-5 w-5 mr-2 hidden sm:inline-block" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                           <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                        </svg>
+                        提交剧本
+                    </button>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <div id="message-box-container"></div>
+
+    <script>
+        // 消息提示框函数 (与列表页一致)
+        function showMessage(message, type = 'info', duration = 3000) {
+            const container = document.getElementById('message-box-container');
+            if (!container) return;
+
+            const messageBox = document.createElement('div');
+            messageBox.className = `message-box ${type}`;
+            messageBox.textContent = message;
+            
+            container.appendChild(messageBox);
+
+            // Animate in
+            setTimeout(() => {
+                messageBox.classList.add('show');
+            }, 10);
+
+            // Automatically hide after duration
+            setTimeout(() => {
+                messageBox.classList.remove('show');
+                messageBox.addEventListener('transitionend', () => {
+                    if (messageBox.parentNode) {
+                        messageBox.parentNode.removeChild(messageBox);
+                    }
+                }, { once: true });
+            }, duration);
+        }
+
+        const createScriptForm = document.getElementById('create-script-form');
+        const cancelBtn = document.getElementById('cancel-btn');
+        const backToListBtnHeader = document.getElementById('back-to-list-btn-header');
+
+        if (createScriptForm) {
+            createScriptForm.addEventListener('submit', function(event) {
+                event.preventDefault(); // 阻止表单默认提交行为
+
+                // 表单验证 (基础示例)
+                const scriptName = document.getElementById('script-name').value;
+                const scriptOutline = document.getElementById('script-outline').value;
+
+                if (!scriptName.trim()) {
+                    showMessage('剧本名称不能为空！', 'error');
+                    document.getElementById('script-name').focus();
+                    return;
+                }
+                if (!scriptOutline.trim()) {
+                    showMessage('大纲内容不能为空！', 'error');
+                    document.getElementById('script-outline').focus();
+                    return;
+                }
+
+                // 实际应用中，这里会收集表单数据并发送到后端
+                const formData = {
+                    name: scriptName,
+                    description: document.getElementById('script-description').value,
+                    outline: scriptOutline,
+                    aiPrompt: document.getElementById('ai-prompt').value,
+                };
+                console.log('表单数据:', formData);
+                
+                showMessage('剧本提交成功！(模拟)', 'success');
+                // 可以在成功后清空表单或跳转页面
+                // createScriptForm.reset(); 
+                // window.location.href = 'short_drama_backend_ui.html'; // 跳转回列表页
+            });
+        }
+
+        // 为取消按钮和返回按钮添加提示 (实际项目中会直接跳转)
+        // 注意：href属性已经设置了跳转，这里的showMessage更多是演示目的
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', function(event) {
+                // 如果不想立即跳转，可以 event.preventDefault();
+                // showMessage('操作已取消，返回列表页。', 'info');
+                // 实际中，href 属性会处理跳转
+            });
+        }
+        if (backToListBtnHeader) {
+             backToListBtnHeader.addEventListener('click', function(event) {
+                // showMessage('返回列表页。', 'info');
+             });
+        }
+
+        // 假设 short_drama_backend_ui.html 是列表页面的文件名
+        // 如果你希望按钮点击后先显示消息再跳转，可以这样做：
+        /*
+        function navigateWithDelay(url, message, type) {
+            showMessage(message, type);
+            setTimeout(() => {
+                window.location.href = url;
+            }, 1500); // 延迟1.5秒跳转
+        }
+
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', function(event) {
+                event.preventDefault(); // 阻止默认的href跳转
+                navigateWithDelay('short_drama_backend_ui.html', '操作已取消，即将返回列表页...', 'info');
+            });
+        }
+        */
+
+    </script>
+</body>
+</html>

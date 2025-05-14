@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>短剧创作后台管理</title>
+    <style>
+        /* 基础样式，你可以根据需要扩展或使用CSS框架 */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            background-color: #f4f6f9;
+            color: #333;
+        }
+        .container {
+            width: 90%;
+            margin: 20px auto;
+            background-color: #fff;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            border-radius: 8px;
+        }
+        header {
+            background-color: #007bff;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px 8px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        header h1 {
+            margin: 0;
+            font-size: 1.8em;
+        }
+        nav ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+            display: flex; /* 简单导航示例 */
+        }
+        nav ul li {
+            margin-left: 20px;
+        }
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+            font-size: 1em;
+        }
+        .main-content {
+            padding-top: 20px;
+        }
+        .toolbar {
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .toolbar .search-bar input {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-right: 10px;
+        }
+        .toolbar .btn {
+            padding: 8px 15px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .toolbar .btn-secondary {
+            background-color: #6c757d;
+        }
+        .script-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .script-table th, .script-table td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+        .script-table th {
+            background-color: #f2f2f2;
+        }
+        .script-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .script-table .actions a {
+            margin-right: 8px;
+            color: #007bff;
+            text-decoration: none;
+        }
+        .script-table .actions a:hover {
+            text-decoration: underline;
+        }
+        .status {
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            color: white;
+        }
+        .status-draft { background-color: #6c757d; }
+        .status-review { background-color: #ffc107; color: #333; }
+        .status-published { background-color: #28a745; }
+        .status-offline { background-color: #dc3545; }
+
+        .pagination {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .pagination a {
+            color: #007bff;
+            padding: 8px 16px;
+            text-decoration: none;
+            border: 1px solid #ddd;
+            margin: 0 2px;
+            border-radius: 4px;
+        }
+        .pagination a.active {
+            background-color: #007bff;
+            color: white;
+            border: 1px solid #007bff;
+        }
+        .pagination a:hover:not(.active) {background-color: #ddd;}
+
+        /* 响应式调整 */
+        @media (max-width: 768px) {
+            .toolbar {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .toolbar .search-bar {
+                margin-bottom: 10px;
+                width: 100%;
+            }
+            .toolbar .search-bar input {
+                width: calc(100% - 20px); /* 考虑padding */
+            }
+            .toolbar .btn {
+                width: 100%;
+                margin-bottom: 5px;
+            }
+            .script-table thead {
+                display: none; /* 移动端可以考虑卡片式列表或简化表头 */
+            }
+            .script-table, .script-table tbody, .script-table tr, .script-table td {
+                display: block;
+                width: 100%;
+            }
+            .script-table tr {
+                margin-bottom: 15px;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+            }
+            .script-table td {
+                text-align: right;
+                padding-left: 50%; /* 创建标签效果 */
+                position: relative;
+                border: none;
+                border-bottom: 1px solid #eee;
+            }
+            .script-table td::before {
+                content: attr(data-label);
+                position: absolute;
+                left: 10px;
+                width: calc(50% - 20px); /* 标签宽度 */
+                padding-right: 10px;
+                white-space: nowrap;
+                text-align: left;
+                font-weight: bold;
+            }
+            .script-table td:last-child {
+                border-bottom: 0;
+            }
+            .script-table .actions {
+                text-align: right; /* 或者根据需要调整 */
+            }
+        }
+
+    </style>
+</head>
+<body>
+    <header>
+        <h1>短剧创作后台</h1>
+        <nav>
+            <ul>
+                <li><a href="#">仪表盘</a></li>
+                <li><a href="#" class="active">剧本管理</a></li>
+                <li><a href="#">用户管理</a></li>
+                <li><a href="#">设置</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="container">
+        <div class="toolbar">
+            <div class="search-bar">
+                <input type="text" placeholder="搜索剧本名称、编剧...">
+                <button class="btn btn-secondary">搜索</button>
+            </div>
+            <a href="#" class="btn">新建剧本</a>
+        </div>
+
+        <div class="filter-bar" style="margin-bottom: 20px;">
+            <label for="status-filter">状态：</label>
+            <select id="status-filter" name="status">
+                <option value="">全部</option>
+                <option value="draft">草稿</option>
+                <option value="review">审核中</option>
+                <option value="published">已发布</option>
+                <option value="offline">已下架</option>
+            </select>
+            </div>
+
+        <table class="script-table">
+            <thead>
+                <tr>
+                    <th><input type="checkbox" id="select-all"></th>
+                    <th>剧本ID</th>
+                    <th>剧本名称</th>
+                    <th>编剧</th>
+                    <th>创建日期</th>
+                    <th>更新日期</th>
+                    <th>状态</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td data-label="选择"><input type="checkbox" class="row-checkbox"></td>
+                    <td data-label="剧本ID">S00001</td>
+                    <td data-label="剧本名称">都市逆袭龙王</td>
+                    <td data-label="编剧">张三</td>
+                    <td data-label="创建日期">2024-05-08</td>
+                    <td data-label="更新日期">2024-05-09</td>
+                    <td data-label="状态"><span class="status status-published">已发布</span></td>
+                    <td data-label="操作" class="actions">
+                        <a href="#">编辑</a>
+                        <a href="#">查看</a>
+                        <a href="#">下架</a>
+                        <a href="#" style="color:red;">删除</a>
+                    </td>
+                </tr>
+                <tr>
+                    <td data-label="选择"><input type="checkbox" class="row-checkbox"></td>
+                    <td data-label="剧本ID">S00002</td>
+                    <td data-label="剧本名称">穿越古代当赘婿</td>
+                    <td data-label="编剧">李四</td>
+                    <td data-label="创建日期">2024-04-15</td>
+                    <td data-label="更新日期">2024-05-01</td>
+                    <td data-label="状态"><span class="status status-review">审核中</span></td>
+                    <td data-label="操作" class="actions">
+                        <a href="#">编辑</a>
+                        <a href="#">查看</a>
+                        <a href="#" style="color:red;">删除</a>
+                    </td>
+                </tr>
+                <tr>
+                    <td data-label="选择"><input type="checkbox" class="row-checkbox"></td>
+                    <td data-label="剧本ID">S00003</td>
+                    <td data-label="剧本名称">我的AI女友</td>
+                    <td data-label="编剧">王五</td>
+                    <td data-label="创建日期">2024-03-20</td>
+                    <td data-label="更新日期">2024-03-20</td>
+                    <td data-label="状态"><span class="status status-draft">草稿</span></td>
+                    <td data-label="操作" class="actions">
+                        <a href="#">编辑</a>
+                        <a href="#">查看</a>
+                        <a href="#" style="color:red;">删除</a>
+                    </td>
+                </tr>
+                </tbody>
+        </table>
+
+        <div class="pagination">
+            <a href="#">&laquo; 上一页</a>
+            <a href="#" class="active">1</a>
+            <a href="#">2</a>
+            <a href="#">3</a>
+            <a href="#">下一页 &raquo;</a>
+        </div>
+    </div>
+
+    <script>
+        // 简单的交互脚本示例
+        // 全选/取消全选
+        const selectAllCheckbox = document.getElementById('select-all');
+        const rowCheckboxes = document.querySelectorAll('.row-checkbox');
+
+        if (selectAllCheckbox) {
+            selectAllCheckbox.addEventListener('change', function() {
+                rowCheckboxes.forEach(checkbox => {
+                    checkbox.checked = this.checked;
+                });
+            });
+        }
+
+        rowCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                if (!this.checked) {
+                    selectAllCheckbox.checked = false;
+                } else {
+                    // 检查是否所有行都被选中
+                    let allChecked = true;
+                    rowCheckboxes.forEach(cb => {
+                        if (!cb.checked) {
+                            allChecked = false;
+                        }
+                    });
+                    selectAllCheckbox.checked = allChecked;
+                }
+            });
+        });
+
+        // 移动端表头数据标签 (如果使用JS动态添加)
+        // 这部分在纯HTML原型中，已通过 td 的 data-label 和 CSS ::before 实现
+        // 如果是动态加载数据，可能需要JS来设置 data-label
+    </script>
+
+</body>
+</html>

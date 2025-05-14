@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>角色核心提示词管理 - 短剧创作后台</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/heroicons/2.0.18/24/outline/heroicons.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+            background-color: #f3f4f6; /* Tailwind gray-100 */
+        }
+        /* 消息提示框样式 */
+        .message-box {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 1rem 1.5rem;
+            border-radius: 0.375rem;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+            z-index: 1050;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+            pointer-events: none;
+        }
+        .message-box.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+            pointer-events: auto;
+        }
+        .message-box.success { background-color: #d1fae5; color: #065f46; border: 1px solid #6ee7b7; }
+        .message-box.error { background-color: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+        .message-box.info { background-color: #e0e7ff; color: #3730a3; border: 1px solid #a5b4fc; }
+
+        /* Accordion 样式 */
+        .accordion-header { cursor: pointer; }
+        .accordion-content { display: none; }
+        .accordion-content.open { display: block; }
+        .accordion-icon.rotate-180 { transform: rotate(180deg); }
+
+        /* Prompt item styling */
+        .prompt-item {
+            padding: 1rem; /* p-4 */
+            border: 1px solid #e5e7eb; /* border-gray-200 */
+            border-radius: 0.375rem; /* rounded-md */
+            background-color: #f9fafb; /* bg-gray-50 */
+        }
+        .prompt-item textarea {
+            min-height: 100px;
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    </div>
+                <h1 class="text-xl font-semibold text-gray-900">角色核心提示词管理</h1>
+                <div class="w-auto sm:w-36"></div> </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div id="characters-container" class="space-y-4">
+            <div class="character-accordion-item bg-white rounded-lg shadow-md">
+                <div class="accordion-header flex justify-between items-center p-4 border-b border-gray-200">
+                    <input type="text" value="角色A: 李明 (男主角)" class="text-lg font-medium text-gray-900 border-none focus:ring-0 p-0 flex-grow" placeholder="角色名称">
+                    <div class="flex items-center">
+                        <button type="button" class="delete-character-btn text-red-500 hover:text-red-700 p-1 rounded-full hover:bg-red-100 transition-colors" title="删除此角色">
+                            <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M8.75 1A2.75 2.75 0 006 3.75v.443c-.795.077-1.58.222-2.323.446A22.49 22.49 0 00.625 6.162v-.433A2.25 2.25 0 012.875 3.5h14.25a2.25 2.25 0 012.25 2.25v.433c-.69-.206-1.384-.363-2.098-.485a22.549 22.549 0 00-2.102-.232V3.75A2.75 2.75 0 0011.25 1h-2.5zM2.875 7.5A2.25 2.25 0 01.625 5.25v10.5c0 1.243 1.007 2.25 2.25 2.25h14.25c1.243 0 2.25-1.007 2.25-2.25V5.25A2.25 2.25 0 0117.125 7.5v9.75a.75.75 0 01-.75.75H3.625a.75.75 0 01-.75-.75V7.5zM10 12.5a.75.75 0 01.75-.75h.008a.75.75 0 01.75.75v3a.75.75 0 01-1.5 0v-3zm-2.25-.75a.75.75 0 00-1.5 0v3a.75.75 0 001.5 0v-3zM15 11.75a.75.75 0 01-.75.75v3a.75.75 0 01-1.5 0v-3a.75.75 0 01.75-.75h.008a.75.75 0 01.75.75z" clip-rule="evenodd" />
+                            </svg>
+                        </button>
+                        <svg class="accordion-icon h-6 w-6 text-gray-500 transform transition-transform duration-200 ml-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                </div>
+                <div class="accordion-content p-4 space-y-4">
+                    <div class="prompt-sets-container space-y-3">
+                        <div class="prompt-item">
+                            <div class="flex justify-between items-center mb-2">
+                                <input type="text" value="日常装扮提示" class="text-sm font-medium text-gray-700 border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 py-1 px-2" placeholder="提示词标签 (例如: 日常)">
+                                <button type="button" class="delete-prompt-item-btn text-gray-400 hover:text-red-600" title="删除此提示词条目">
+                                    <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M2 4.75A.75.75 0 012.75 4h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 4.75zm1.31 1.944a.75.75 0 011.05-.143L6.5 8.028l2.14-1.471a.75.75 0 011.05.143l2.5 1.714a.75.75 0 01-.143 1.05L9.472 11.5l2.625 1.803a.75.75 0 01-.143 1.05l-2.5 1.714a.75.75 0 01-1.05-.143L6.5 13.472l-2.14 1.471a.75.75 0 01-1.05-.143l-2.5-1.714a.75.75 0 01.143-1.05L3.528 11.5.904 9.697a.75.75 0 01.143-1.05l2.5-1.714zM14.5 8.5a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5a.75.75 0 01.75-.75z" clip-rule="evenodd" /></svg>
+                                </button>
+                            </div>
+                            <textarea class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm" placeholder="输入角色的核心提示词..."></textarea>
+                        </div>
+                        <div class="prompt-item">
+                            <div class="flex justify-between items-center mb-2">
+                                <input type="text" value="战斗姿态提示" class="text-sm font-medium text-gray-700 border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 py-1 px-2" placeholder="提示词标签">
+                                <button type="button" class="delete-prompt-item-btn text-gray-400 hover:text-red-600" title="删除此提示词条目">
+                                    <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M2 4.75A.75.75 0 012.75 4h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 4.75zm1.31 1.944a.75.75 0 011.05-.143L6.5 8.028l2.14-1.471a.75.75 0 011.05.143l2.5 1.714a.75.75 0 01-.143 1.05L9.472 11.5l2.625 1.803a.75.75 0 01-.143 1.05l-2.5 1.714a.75.75 0 01-1.05-.143L6.5 13.472l-2.14 1.471a.75.75 0 01-1.05-.143l-2.5-1.714a.75.75 0 01.143-1.05L3.528 11.5.904 9.697a.75.75 0 01.143-1.05l2.5-1.714zM14.5 8.5a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5a.75.75 0 01.75-.75z" clip-rule="evenodd" /></svg>
+                                </button>
+                            </div>
+                            <textarea class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm" placeholder="输入角色的核心提示词..."></textarea>
+                        </div>
+                    </div>
+                    <button type="button" class="add-prompt-item-btn mt-3 inline-flex items-center px-3 py-1.5 border border-dashed border-gray-400 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 hover:border-gray-500">
+                        <svg class="h-4 w-4 mr-1.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" /></svg>
+                        添加新提示词条目
+                    </button>
+                </div>
+            </div>
+            </div>
+
+        <div class="mt-8 pt-6 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-end gap-3">
+            <button type="button" id="add-new-character-btn" class="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                <svg class="h-5 w-5 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" /></svg>
+                新增角色
+            </button>
+            <button type="button" id="submit-all-changes-btn" class="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                <svg class="h-5 w-5 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>
+                提交所有更改
+            </button>
+        </div>
+    </main>
+
+    <div id="message-box-container"></div>
+
+    <script>
+        // --- Message Box Function ---
+        function showMessage(message, type = 'info', duration = 3000) {
+            const container = document.getElementById('message-box-container');
+            if (!container) return;
+            const messageBox = document.createElement('div');
+            messageBox.className = `message-box ${type}`;
+            messageBox.textContent = message;
+            container.appendChild(messageBox);
+            setTimeout(() => messageBox.classList.add('show'), 10);
+            setTimeout(() => {
+                messageBox.classList.remove('show');
+                messageBox.addEventListener('transitionend', () => messageBox.remove(), { once: true });
+            }, duration);
+        }
+
+        const charactersContainer = document.getElementById('characters-container');
+        let characterCount = 1; // To keep track of character numbers for unique IDs/names
+
+        // --- Accordion Functionality ---
+        function initializeCharacterAccordionEvents(characterItem) {
+            const header = characterItem.querySelector('.accordion-header');
+            const content = characterItem.querySelector('.accordion-content');
+            const icon = header.querySelector('.accordion-icon');
+
+            header.addEventListener('click', (event) => {
+                // Prevent accordion toggle when clicking on input or delete button inside header
+                if (event.target.closest('input') || event.target.closest('.delete-character-btn')) {
+                    return;
+                }
+                content.classList.toggle('open');
+                icon.classList.toggle('rotate-180');
+            });
+
+            // Delete Character Button
+            const deleteCharacterBtn = characterItem.querySelector('.delete-character-btn');
+            if (deleteCharacterBtn) {
+                deleteCharacterBtn.addEventListener('click', (e) => {
+                    e.stopPropagation(); // Prevent accordion toggle
+                    if (confirm(`确定要删除角色 "${characterItem.querySelector('input[type=text]').value || '此角色'}" 吗？`)) {
+                        characterItem.remove();
+                        showMessage('角色已删除', 'success');
+                    }
+                });
+            }
+            
+            // Initialize prompt item functionality for this character
+            initializePromptSetManagement(characterItem);
+        }
+        
+        // --- Prompt Set Management ---
+        function initializePromptSetManagement(characterItem) {
+            const promptSetsContainer = characterItem.querySelector('.prompt-sets-container');
+            const addPromptBtn = characterItem.querySelector('.add-prompt-item-btn');
+            let promptSetCounter = promptSetsContainer.querySelectorAll('.prompt-item').length;
+
+            function createPromptItemHTML() {
+                promptSetCounter++;
+                return `
+                    <div class="prompt-item">
+                        <div class="flex justify-between items-center mb-2">
+                            <input type="text" value="提示词标签 ${promptSetCounter}" class="text-sm font-medium text-gray-700 border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 py-1 px-2" placeholder="提示词标签">
+                            <button type="button" class="delete-prompt-item-btn text-gray-400 hover:text-red-600" title="删除此提示词条目">
+                                <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M2 4.75A.75.75 0 012.75 4h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 4.75zm1.31 1.944a.75.75 0 011.05-.143L6.5 8.028l2.14-1.471a.75.75 0 011.05.143l2.5 1.714a.75.75 0 01-.143 1.05L9.472 11.5l2.625 1.803a.75.75 0 01-.143 1.05l-2.5 1.714a.75.75 0 01-1.05-.143L6.5 13.472l-2.14 1.471a.75.75 0 01-1.05-.143l-2.5-1.714a.75.75 0 01.143-1.05L3.528 11.5.904 9.697a.75.75 0 01.143-1.05l2.5-1.714zM14.5 8.5a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5a.75.75 0 01.75-.75z" clip-rule="evenodd" /></svg>
+                            </button>
+                        </div>
+                        <textarea class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm" placeholder="输入角色的核心提示词..."></textarea>
+                    </div>
+                `;
+            }
+
+            if (addPromptBtn) {
+                addPromptBtn.addEventListener('click', () => {
+                    promptSetsContainer.insertAdjacentHTML('beforeend', createPromptItemHTML());
+                });
+            }
+
+            // Event delegation for deleting prompt items
+            promptSetsContainer.addEventListener('click', function(event) {
+                const deleteButton = event.target.closest('.delete-prompt-item-btn');
+                if (deleteButton) {
+                    if (confirm('确定要删除此提示词条目吗？')) {
+                        deleteButton.closest('.prompt-item').remove();
+                        showMessage('提示词条目已删除', 'info');
+                    }
+                }
+            });
+        }
+
+        // --- Add New Character ---
+        const addNewCharacterBtn = document.getElementById('add-new-character-btn');
+        if (addNewCharacterBtn) {
+            addNewCharacterBtn.addEventListener('click', () => {
+                characterCount++;
+                const newCharacterHTML = `
+                    <div class="character-accordion-item bg-white rounded-lg shadow-md">
+                        <div class="accordion-header flex justify-between items-center p-4 border-b border-gray-200">
+                            <input type="text" value="新角色 ${characterCount}" class="text-lg font-medium text-gray-900 border-none focus:ring-0 p-0 flex-grow" placeholder="角色名称">
+                            <div class="flex items-center">
+                                <button type="button" class="delete-character-btn text-red-500 hover:text-red-700 p-1 rounded-full hover:bg-red-100 transition-colors" title="删除此角色">
+                                    <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8.75 1A2.75 2.75 0 006 3.75v.443c-.795.077-1.58.222-2.323.446A22.49 22.49 0 00.625 6.162v-.433A2.25 2.25 0 012.875 3.5h14.25a2.25 2.25 0 012.25 2.25v.433c-.69-.206-1.384-.363-2.098-.485a22.549 22.549 0 00-2.102-.232V3.75A2.75 2.75 0 0011.25 1h-2.5zM2.875 7.5A2.25 2.25 0 01.625 5.25v10.5c0 1.243 1.007 2.25 2.25 2.25h14.25c1.243 0 2.25-1.007 2.25-2.25V5.25A2.25 2.25 0 0117.125 7.5v9.75a.75.75 0 01-.75.75H3.625a.75.75 0 01-.75-.75V7.5zM10 12.5a.75.75 0 01.75-.75h.008a.75.75 0 01.75.75v3a.75.75 0 01-1.5 0v-3zm-2.25-.75a.75.75 0 00-1.5 0v3a.75.75 0 001.5 0v-3zM15 11.75a.75.75 0 01-.75.75v3a.75.75 0 01-1.5 0v-3a.75.75 0 01.75-.75h.008a.75.75 0 01.75.75z" clip-rule="evenodd" /></svg>
+                                </button>
+                                <svg class="accordion-icon h-6 w-6 text-gray-500 transform transition-transform duration-200 ml-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="accordion-content p-4 space-y-4">
+                            <div class="prompt-sets-container space-y-3">
+                                <div class="prompt-item">
+                                    <div class="flex justify-between items-center mb-2">
+                                        <input type="text" value="提示词标签 1" class="text-sm font-medium text-gray-700 border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 py-1 px-2" placeholder="提示词标签">
+                                        <button type="button" class="delete-prompt-item-btn text-gray-400 hover:text-red-600" title="删除此提示词条目">
+                                            <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M2 4.75A.75.75 0 012.75 4h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 4.75zm1.31 1.944a.75.75 0 011.05-.143L6.5 8.028l2.14-1.471a.75.75 0 011.05.143l2.5 1.714a.75.75 0 01-.143 1.05L9.472 11.5l2.625 1.803a.75.75 0 01-.143 1.05l-2.5 1.714a.75.75 0 01-1.05-.143L6.5 13.472l-2.14 1.471a.75.75 0 01-1.05-.143l-2.5-1.714a.75.75 0 01.143-1.05L3.528 11.5.904 9.697a.75.75 0 01.143-1.05l2.5-1.714zM14.5 8.5a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5a.75.75 0 01.75-.75z" clip-rule="evenodd" /></svg>
+                                        </button>
+                                    </div>
+                                    <textarea class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm" placeholder="输入角色的核心提示词..."></textarea>
+                                </div>
+                            </div>
+                            <button type="button" class="add-prompt-item-btn mt-3 inline-flex items-center px-3 py-1.5 border border-dashed border-gray-400 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 hover:border-gray-500">
+                                <svg class="h-4 w-4 mr-1.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" /></svg>
+                                添加新提示词条目
+                            </button>
+                        </div>
+                    </div>
+                `;
+                charactersContainer.insertAdjacentHTML('beforeend', newCharacterHTML);
+                const newCharacterElement = charactersContainer.lastElementChild;
+                initializeCharacterAccordionEvents(newCharacterElement); // Initialize events for the new character
+                showMessage('新角色已添加', 'success');
+            });
+        }
+
+        // --- Submit All Changes ---
+        const submitAllBtn = document.getElementById('submit-all-changes-btn');
+        if (submitAllBtn) {
+            submitAllBtn.addEventListener('click', () => {
+                const allCharactersData = [];
+                document.querySelectorAll('.character-accordion-item').forEach(charItem => {
+                    const characterName = charItem.querySelector('.accordion-header input[type="text"]').value;
+                    const prompts = [];
+                    charItem.querySelectorAll('.prompt-item').forEach(promptDiv => {
+                        prompts.push({
+                            label: promptDiv.querySelector('input[type="text"]').value,
+                            text: promptDiv.querySelector('textarea').value
+                        });
+                    });
+                    allCharactersData.push({ name: characterName, prompts: prompts });
+                });
+                console.log("提交的数据:", allCharactersData);
+                showMessage('所有更改已提交 (查看控制台)', 'success');
+            });
+        }
+
+        // Initialize existing characters on page load
+        document.querySelectorAll('.character-accordion-item').forEach(item => {
+            initializeCharacterAccordionEvents(item);
+        });
+
+    </script>
+</body>
+</html>

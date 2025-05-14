@@ -1,0 +1,10 @@
+[功能]
+这是一个短剧AI管理平台的UI原型设计图项目，通过HTML的静态页面向开发者展示UI设计效果。
+
+[项目结构]
+index.html: 首页，展示短剧列表
+create.html: 创建短剧页面
+handle.html: 处理短剧页面
+prompts.html: 提示词页面
+
+
